@@ -37,7 +37,7 @@ Obtener lista de mineros
 near view $ID get_minters
 
 Agregar minero
-near call $ID add_minter '{"account_id": "joehank.testnet"}' --accountId $ID --deposit 0.000000000000000000000001
+near call $ID add_minter '{"account_id": "joehank.testnet"}' --accountId $ID --depositYocto 1
 
 Remover minero
 near call $ID remove_minter '{"account_id": "joehank.testnet"}' --accountId $ID --deposit 0.000000000000000000000001
@@ -64,3 +64,15 @@ near call $ID reward_player '{"player_owner_id": "dokxo.testnet", "tokens_mint" 
 
 32.58
 near call $ID reward_player '{"player_owner_id": "joehank.testnet", "tokens_mint" : "32580000000000000000000000"}' --accountId $ID --deposit 0.000000000000000000000001
+
+Set Lock to transfer tokens
+near call $ID set_locked_until '{"unix_timestamp":1651259432}' --accountId $ID
+
+Mintin with vesting
+near call $ID mint_vested '{"account_id":"darkjoehank.testnet","amount":"25000000000000000000000000","locked_until_timestamp":1651599540,"linear_start_timestamp":1651599780,"linear_end_timestamp":1651599900}' --accountId darkjoehank.testnet --depositYocto 1
+
+See the amount vesting
+near view $ID get_locked_amount '{"account": "joehank.testnet"}'
+
+See the vesting info
+near view $ID get_vesting_info '{"account_id": "joehank.testnet"}'
