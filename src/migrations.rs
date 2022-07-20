@@ -67,6 +67,7 @@ impl NativoToken {
             minters: old.minters,
             total_supply: old.total_supply,
             // new fields
+            max_supply: 100000000000000000000000000000000,
             locked_until_nano: 0,
             vested: LookupMap::new(b"v".to_vec()),
             vested_count: 0,

@@ -5,7 +5,7 @@ use near_contract_standards::fungible_token::{
     metadata::{FungibleTokenMetadata, FungibleTokenMetadataProvider, FT_METADATA_SPEC},
     resolver::FungibleTokenResolver,
 };
-
+use std::convert::TryFrom;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::LazyOption;
 use near_sdk::json_types::{ValidAccountId, U128};
@@ -52,6 +52,8 @@ pub struct NativoToken {
 
     pub total_supply: Balance,
 
+    pub max_supply: Balance,
+
     /// transfers are locked until this moment
     pub locked_until_nano: TimestampNano,
 
@@ -72,6 +74,7 @@ impl NativoToken {
             accounts: LookupMap::new(b"a".to_vec()),
             minters: vec![owner_id],
             total_supply: 0,
+            max_supply: 100000000000000000000000000000000,
             locked_until_nano: 0,
             vested: LookupMap::new(b"v".to_vec()),
             vested_count: 0,
@@ -82,6 +85,16 @@ impl NativoToken {
     pub fn get_owner_id(&self) -> AccountId {
         return self.owner_id.clone();
     }
+    fn how_max_supply(&self, amount: Balance)   {
+        let t_supply: Balance = self.total_supply.into();
+        let max_to_mint :Balance = t_supply  + amount;
+        //validate that only the owner contract add new contract address
+            assert_eq!(
+                max_to_mint <= self.max_supply,
+                true,
+                "¡The total of NTV Tokens are minted!"
+            );
+        }
     pub fn set_owner_id(&mut self, owner_id: AccountId) {
         self.assert_owner_calling();
         assert!(env::is_valid_account_id(owner_id.as_bytes()));
@@ -97,6 +110,8 @@ impl NativoToken {
     #[payable]
     pub fn mint(&mut self, account_id: &AccountId, amount: U128String) {
         assert_one_yocto();
+        let amount_b: Balance = Balance::try_from(amount.clone()).unwrap();
+        self.how_max_supply(amount_b);
         self.assert_minter(env::predecessor_account_id());
         self.mint_into(account_id, amount.0);
     }
@@ -105,6 +120,8 @@ impl NativoToken {
     #[payable]
     pub fn reward_player(&mut self, player_owner_id: ValidAccountId, tokens_mint: U128String) {
         assert_one_yocto();
+        let amount_b: Balance = Balance::try_from(tokens_mint.clone()).unwrap();
+        self.how_max_supply(amount_b);
         let account_id: AccountId = player_owner_id.clone().into();
 
         self.mint_into(&account_id.clone(), tokens_mint.clone().0);
